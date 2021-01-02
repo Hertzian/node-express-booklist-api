@@ -18,7 +18,7 @@ app.use(express.json())
 
 // use routes
 app.use('/api/books', bookRoutes)
-app.use('/', (req, res) => res.send('API Running...'))
+// app.use('/', (req, res) => res.send('API Running...'))
 
 // folder to uploaded images
 app.use(express.static(path.join(__dirname, 'public')))
