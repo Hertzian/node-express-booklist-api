@@ -2,7 +2,7 @@ const path = require('path')
 const express = require('express')
 // const fileUpload = require('express-fileupload');
 const dotenv = require('dotenv')
-dotenv.config()
+dotenv.config({path: 'config.env'})
 const { connectDb } = require('./config/connectDb')
 connectDb()
 
