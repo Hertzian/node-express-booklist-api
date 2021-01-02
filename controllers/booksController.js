@@ -1,5 +1,5 @@
+const path = require('path')
 const Book = require('../models/BookModel')
-
 
 // @desc    get all books
 // @route   GET /api/books
@@ -17,7 +17,7 @@ exports.getBooks = async (req, res) => {
 
     res.json({
       success: true,
-      books,
+      data: books,
     })
   } catch (err) {
     res.json({
@@ -31,47 +31,76 @@ exports.getBooks = async (req, res) => {
 // @route   POST /api/books
 // @access  public
 exports.createBook = async (req, res) => {
-  try {
-    const {title, author, isbn, opinion} = req.body
-    const image = req.files.image
+  console.log(req.files.image)
 
-    if(!req.files || image.mimetype.startsWith('image')){
+  try {
+    const { title, author, isbn, opinion } = req.body
+    const photo = req.files.image
+
+    console.log(photo.mimetype.startsWith('image'))
+
+    // req.files contains a file & make sure photo is an image
+    if (!photo.mimetype.startsWith('image')) {
       res.status(400).json({
         success: false,
-        error: 'Please upload an image'
+        error: 'Please upload an image',
       })
     }
+
+    console.log(photo.size)
 
     // check file size
-    if(file.size > process.env.MAX_FILE_UPLOAD){
+    if (photo.size > process.env.MAX_FILE_UPLOAD) {
       res.status(400).json({
         success: false,
-        error: ``
+        error: `Images with less than ${process.env.MAX_FILE_UPLOAD} please`,
       })
     }
 
-    // raw file from req
-    const imgUpload = req.files.img
-    const fileNameSplit = imgUpload.name.split('.')
-    const fileExtension = fileNameSplit[fileNameSplit.length - 1]
+    console.log('old image name: ', photo.name)
+    // custom name for image uploaded
+    photo.name = `photo_${Date.now()}_${path.parse(photo.name).ext}`
+    console.log('new image name: ',photo.name)
+    console.log('path.parse: ', path.parse(photo.name))
 
-    const validExtensions = ['png', 'jpg', 'gif',]
+    console.log(process.env.UPLOAD_PATH)
 
+    photo.mv(`${process.env.UPLOAD_PATH}/${photo.name}`, async (err) => {
+      if (err) {
+        console.log(err)
+        res.status(400).json({
+          success: false,
+          error: 'Problen with upload',
+        })
+      }
 
-    const newBook = await Book.create({
-      title,
-      author,
-      isbn,
-      opinion,
-      image
+      const newBook = await Book.create({
+        title,
+        author,
+        isbn,
+        opinion,
+        image: photo.name,
+      })
+
+      newBook.save()
+
+      res.json({
+        success: true,
+        data: newBook,
+      })
     })
-
   } catch (err) {
     res.json({
+      jotio: 'aqui',
       success: false,
-      error
+      error: err,
     })
   }
+}
 
-
+// @desc    create new book
+// @route   DELETE /api/books/:bookId
+// @access  public
+exports.deleteBook = () => {
+  console.log('delete book')
 }

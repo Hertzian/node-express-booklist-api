@@ -1,15 +1,15 @@
 const path = require('path')
 const express = require('express')
-// const fileUpload = require('express-fileupload');
+const fileUpload = require('express-fileupload')
 const dotenv = require('dotenv')
-dotenv.config({path: 'config.env'})
+dotenv.config({ path: 'config.env' })
 const { connectDb } = require('./config/connectDb')
 connectDb()
 
 const app = express()
 
 // to img uploads
-// app.use(fileUpload({useTempFiles: true}))
+app.use(fileUpload())
 
 // mount routes
 const bookRoutes = require('./routes/bookRoutes')
@@ -20,7 +20,7 @@ app.use(express.json())
 app.use('/api/books', bookRoutes)
 
 // folder to uploaded images
-app.use('/uploads', express.static(path.join(__dirname, '/uploads')))
+app.use(express.static(path.join(__dirname, 'public')))
 
 const PORT = process.env.PORT || 5000
 
