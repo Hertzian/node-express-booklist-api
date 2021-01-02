@@ -1,4 +1,5 @@
 const path = require('path')
+const fs = require('fs')
 const Book = require('../models/BookModel')
 
 // @desc    get all books
@@ -32,8 +33,8 @@ exports.getBooks = async (req, res) => {
 // @access  public
 exports.createBook = async (req, res) => {
   // this because doesnt catch the error...
-  if(req.files === null){
-    res.status(400).json({
+  if (req.files === null) {
+    return res.status(400).json({
       success: false,
       error: 'Please upload an image',
     })
@@ -45,7 +46,7 @@ exports.createBook = async (req, res) => {
 
     // req.files contains a file & make sure photo is an image
     if (!photo.mimetype.startsWith('image')) {
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         error: 'Please upload an image',
       })
@@ -53,7 +54,7 @@ exports.createBook = async (req, res) => {
 
     // check file size
     if (photo.size > process.env.MAX_FILE_UPLOAD) {
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         error: `Images with less than ${process.env.MAX_FILE_UPLOAD} please`,
       })
@@ -108,11 +109,17 @@ exports.deleteBook = async (req, res) => {
       })
     }
 
-    book.remove()
+    book.remove({ _id: req.params.bookId }, (err, photo) => {
+      if (err) {
+        res.status(400).json({ success: false, error: 'Fail...' })
+      }
 
-    res.json({
-      success: true,
-      data: {},
+      fs.unlink(`${process.env.UPLOAD_PATH}/${book.image}`, () => {
+        res.json({
+          success: true,
+          data: {},
+        })
+      })
     })
   } catch (err) {
     res.status(500).json({
