@@ -109,17 +109,13 @@ exports.deleteBook = async (req, res) => {
       })
     }
 
-    book.remove({ _id: req.params.bookId }, (err, photo) => {
-      if (err) {
-        res.status(400).json({ success: false, error: 'Fail...' })
-      }
+    fs.unlinkSync(`${process.env.UPLOAD_PATH}/${book.image}`)
 
-      fs.unlink(`${process.env.UPLOAD_PATH}/${book.image}`, () => {
-        res.json({
-          success: true,
-          data: {},
-        })
-      })
+    book.remove()
+
+    res.json({
+      success: true,
+      data: {},
     })
   } catch (err) {
     res.status(500).json({
