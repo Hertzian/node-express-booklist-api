@@ -20,7 +20,7 @@ exports.getBooks = async (req, res) => {
       data: books,
     })
   } catch (err) {
-    res.json({
+    res.status(500).json({
       success: false,
       error,
     })
@@ -31,13 +31,17 @@ exports.getBooks = async (req, res) => {
 // @route   POST /api/books
 // @access  public
 exports.createBook = async (req, res) => {
-  console.log(req.files.image)
+  // this because doesnt catch the error...
+  if(req.files === null){
+    res.status(400).json({
+      success: false,
+      error: 'Please upload an image',
+    })
+  }
 
   try {
     const { title, author, isbn, opinion } = req.body
     const photo = req.files.image
-
-    console.log(photo.mimetype.startsWith('image'))
 
     // req.files contains a file & make sure photo is an image
     if (!photo.mimetype.startsWith('image')) {
@@ -47,8 +51,6 @@ exports.createBook = async (req, res) => {
       })
     }
 
-    console.log(photo.size)
-
     // check file size
     if (photo.size > process.env.MAX_FILE_UPLOAD) {
       res.status(400).json({
@@ -57,13 +59,8 @@ exports.createBook = async (req, res) => {
       })
     }
 
-    console.log('old image name: ', photo.name)
     // custom name for image uploaded
     photo.name = `photo_${Date.now()}_${path.parse(photo.name).ext}`
-    console.log('new image name: ',photo.name)
-    console.log('path.parse: ', path.parse(photo.name))
-
-    console.log(process.env.UPLOAD_PATH)
 
     photo.mv(`${process.env.UPLOAD_PATH}/${photo.name}`, async (err) => {
       if (err) {
@@ -90,8 +87,7 @@ exports.createBook = async (req, res) => {
       })
     })
   } catch (err) {
-    res.json({
-      jotio: 'aqui',
+    res.status(500).json({
       success: false,
       error: err,
     })
@@ -101,6 +97,27 @@ exports.createBook = async (req, res) => {
 // @desc    create new book
 // @route   DELETE /api/books/:bookId
 // @access  public
-exports.deleteBook = () => {
-  console.log('delete book')
+exports.deleteBook = async (req, res) => {
+  try {
+    const book = await Book.findById(req.params.bookId)
+
+    if (!book) {
+      res.status(404).json({
+        success: false,
+        error: 'No book found',
+      })
+    }
+
+    book.remove()
+
+    res.json({
+      success: true,
+      data: {},
+    })
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err,
+    })
+  }
 }
