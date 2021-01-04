@@ -2,8 +2,26 @@ const path = require('path')
 const express = require('express')
 const fileUpload = require('express-fileupload')
 const dotenv = require('dotenv')
+const mongoose = require('mongoose')
+
+// env constants
 dotenv.config({ path: 'config.env' })
-const { connectDb } = require('./config/connectDb')
+
+// db connect
+const connectDb = async () => {
+  try {
+    const conn = await mongoose.connect(process.env.MONGO_URI, {
+      useUnifiedTopology: true,
+      useNewUrlParser: true,
+      useCreateIndex: true
+    })
+
+    console.log(`MongoDb connected: ${conn.connection.host}`)
+  } catch (err) {
+    console.log(`Error: ${err}`)
+    process.exit(1)
+  }
+}
 connectDb()
 
 const app = express()
@@ -11,16 +29,13 @@ const app = express()
 // to img uploads
 app.use(fileUpload())
 
-// mount routes
-const bookRoutes = require('./routes/bookRoutes')
-
 app.use(express.json())
 
 // use routes
-app.use('/api/books', bookRoutes)
+app.use('/api/books', require('./routes/bookRoutes'))
 // app.use('/', (req, res) => res.send('API Running...'))
 
-// folder to uploaded images
+// folder public
 app.use(express.static(path.join(__dirname, 'public')))
 
 const PORT = process.env.PORT || 5000
