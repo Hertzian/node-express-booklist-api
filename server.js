@@ -1,4 +1,5 @@
 const path = require('path')
+const cors = require('cors')
 const express = require('express')
 const fileUpload = require('express-fileupload')
 const dotenv = require('dotenv')
@@ -7,6 +8,8 @@ const { connectDb } = require('./config/connectDb')
 connectDb()
 
 const app = express()
+
+app.use(cors())
 
 // to img uploads
 app.use(fileUpload())
@@ -29,3 +32,8 @@ app.listen(
   PORT,
   console.log(`Server running on ${process.env.NODE_ENV} mode, on port ${PORT}`)
 )
+
+
+
+
+
