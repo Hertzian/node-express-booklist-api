@@ -13,8 +13,8 @@ router.get('/', async (req, res) => {
     const books = await Book.find()
 
     if (!books) {
-      res.json({
-        success: true,
+      return res.json({
+        success: false,
         message: 'No books found',
       })
     }
